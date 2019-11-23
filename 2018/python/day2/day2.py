@@ -26,3 +26,16 @@ for line in data:
 print(nums_to_multiply['number_of_2s'] * nums_to_multiply['number_of_3s'])
 
 #part2
+for x in data:
+    for y in data:
+        diff = 0
+        for i in range(len(x)):
+            if x[i] != y[i]:
+                diff += 1
+        if diff == 1:
+            ans = []
+            for i in range(len(x)):
+                if x[i] == y[i]:
+                    ans.append(x[i])
+            print(''.join(ans))
+            print(x,y)
