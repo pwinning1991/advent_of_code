@@ -4,6 +4,7 @@ nums_to_multiply = {'number_of_2s': 0, 'number_of_3s': 0}
 
 data = [x.strip() for x in open('input.txt')]
 
+#part 1
 for line in data:
     letter_counter = Counter()
     for s in line:
@@ -24,3 +25,4 @@ for line in data:
 
 print(nums_to_multiply['number_of_2s'] * nums_to_multiply['number_of_3s'])
 
+#part2
