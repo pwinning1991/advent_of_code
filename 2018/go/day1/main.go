@@ -14,10 +14,22 @@ func main() {
 	}
 	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
+	sum := 0
 
-	for scanner.Scan() {
-		fmt.Println(scanner.Text())
+	s := bufio.NewScanner(file)
+
+	for s.Scan() {
+		var n int
+		_, err := fmt.Sscanf(s.Text(), "%d", &n)
+		if err != nil {
+			log.Fatalf("could not read %s: %v", s.Text, err)
+		}
+		sum += n
 	}
+
+	if err := s.Err(); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(sum)
 
 }
