@@ -15,6 +15,8 @@ func main() {
 	defer file.Close()
 
 	sum := 0
+	seen := map[int]bool{0: true}
+	var nums []int
 
 	s := bufio.NewScanner(file)
 
@@ -24,12 +26,24 @@ func main() {
 		if err != nil {
 			log.Fatalf("could not read %s: %v", s.Text, err)
 		}
-		sum += n
+		nums = append(nums, n)
 	}
 
 	if err := s.Err(); err != nil {
 		log.Fatal(err)
 	}
+
+	for {
+		for _, n := range nums {
+			sum += n
+			if seen[sum] {
+				fmt.Println(sum)
+				return
+			}
+			seen[sum] = true
+		}
+	}
+
 	fmt.Println(sum)
 
 }
