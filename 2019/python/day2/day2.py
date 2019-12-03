@@ -1,3 +1,4 @@
+import sys
 def run_opscode(list_of_nums, pc):
     if list_of_nums[pc] == 99:
         return False
@@ -24,6 +25,18 @@ def main():
     print(list_of_nums1)
     run_program(list_of_nums1)
     print(f"part1: {list_of_nums1[0]}")
+
+    for x in range(100):
+        for y in range(100):
+            list_of_nums1 = list_of_nums.copy()
+            list_of_nums1[1], list_of_nums1[2] = x, y 
+            run_program(list_of_nums1)
+
+            if list_of_nums1[0] == 19690720:
+                result = 100 * x + y
+                print(f"Answer to part 2: {result}")
+                sys.exit()
+
 
 
 if __name__ == '__main__':
