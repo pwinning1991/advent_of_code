@@ -1,90 +1,99 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 )
 
-type event struct {
-	id   int
-	kind eventKind
-	time time.Time
-}
-
-func (e event) String() string {
-	date := e.time.Format("01/02 15:04")
-	switch e.kind {
-	case eventStart:
-		return fmt.Sprintf("[%s] Guard #%d starts", date, e.id)
-	case eventAsleep:
-		return fmt.Sprintf("[%s] Guard #%d sleeps", date, e.id)
-	case eventAwake:
-		return fmt.Sprintf("[%s] Guard #%d wakes", date, e.id)
-	}
-
-	return fmt.Sprintf("unknown event type: %#v", e)
-}
-
-type eventKind byte
-
-const (
-	eventStart eventKind = iota
-	eventAsleep
-	eventAwake
-)
-
 func main() {
-	b, err := ioutil.ReadFile("input.txt")
+	start := time.Now()
+	file, err := os.Open("input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
-	lines := strings.Split(string(b), "\n")
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	// see: https://regex101.com/r/VRbjzk/1
+	var re = regexp.MustCompile(`.(.*)(]\s)(.[a-zA-Z]*)(..)(.*)`)
+	lines := []string{}
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
 	sort.Strings(lines)
+	currentGuard := 0
+	guardSleepTimes := make([][]int, 4000) //should calculate highest guard id instead of hardcoding 4000
+	for i := 0; i < 4000; i++ {
+		guardSleepTimes[i] = make([]int, 61) // minute counters, 61 is summ
+	}
 
-	var events []event
-
+	sleepTimer := 0 // time guard fell asleep
 	for _, line := range lines {
-		dateStart := strings.Index(line, "]")
-		dateText := line[1:dateStart]
-		date, err := time.Parse("2016-01-02 15:04", dateText)
-		if err != nil {
-			log.Fatalf("could not parse date %q: %v", dateText, err)
-		}
-		e := event{time: date}
-		pieces := strings.Fields(line[dateStart+2:])
-		switch pieces[0] {
-		case "Guard":
-			id, err := strconv.Atoi(pieces[1][1:])
+		eventLog := re.FindAllStringSubmatch(line, -1)
+		minuteSplit := strings.Split(eventLog[0][1], ":")
+		minutes, _ := strconv.Atoi(minuteSplit[1])
+		logType := eventLog[0][3] // falls,wakes,Guard
+		if logType == "Guard" {
+			s := strings.Split(eventLog[0][5], " ")
+			currentGuard, err = strconv.Atoi(s[0])
 			if err != nil {
-				log.Fatalf("could not parse id %q: %v", pieces[1][1:], err)
+				fmt.Println(err)
 			}
-			e.id = id
-			e.kind = eventStart
-		case "falls":
-			e.id = events[len(events)-1].id
-			e.kind = eventAsleep
-		case "wakes":
-			e.id = events[len(events)-1].id
-			e.kind = eventAwake
+		}
+		if logType == "falls" {
+			sleepTimer = minutes
+		}
+		// when guard wakes up calculate time sleep
+		if logType == "wakes" {
+			for i := sleepTimer; i < minutes; i++ {
+				guardSleepTimes[currentGuard][i]++  // incrememnt current slept count
+				guardSleepTimes[currentGuard][60]++ // total minutes slept buffer
+			}
+			sleepTimer = 0
 
 		}
-		events = append(events, e)
+
 	}
+	// Find sleepiest Guard
+	sleepiestGuard := 0
+	sleepiestMinute := 0
+	sleepBuf := 0
+	sleepiestGuardMin := 0
+	for guard, sleepTime := range guardSleepTimes {
+		// only get guards that have slept
+		if sleepTime[60] == 0 {
+			continue
+		}
+		if sleepTime[60] >= guardSleepTimes[sleepiestGuard][60] {
+			sleepiestGuard = guard
 
-	id, minute := findGuard(events)
-	fmt.Println(id * minute)
-
-}
-
-func findGuard(events []event) (id, minute int) {
-	for _, e := range events {
-		fmt.Println(e)
+		}
+		for minute, sleepMin := range sleepTime {
+			if sleepMin > sleepBuf && minute != 60 {
+				sleepiestMinute = minute
+				sleepBuf = sleepMin
+				sleepiestGuardMin = guard
+			}
+		}
 	}
-	return 0, 0
-
+	// Find sleepiest hour for sleepiest guard
+	sleepiestHour := 0
+	sleepBuf = 0
+	for hour, sleepTime := range guardSleepTimes[sleepiestGuard] {
+		if sleepTime > sleepBuf && hour != 60 {
+			sleepiestHour = hour
+			sleepBuf = sleepTime
+		}
+	}
+	fmt.Println("Sleepiest Guard:", sleepiestGuard)
+	fmt.Println("Sleepiest hour:", sleepiestHour)
+	fmt.Println("Part 1 Code:", sleepiestGuard*sleepiestHour)
+	fmt.Println("Part 2 Code:", sleepiestGuardMin*sleepiestMinute)
+	fmt.Println(time.Since(start))
 }
