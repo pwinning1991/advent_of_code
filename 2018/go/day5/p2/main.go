@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+const diff = 'a' - 'A'
+
 func main() {
 	b, err := ioutil.ReadFile("input.txt")
 	if err != nil {
@@ -17,27 +19,15 @@ func main() {
 	minLen := -1
 
 	for u := range units(s) {
-		r := react(trim(s, u))
+		t := strings.Replace(s, string(u), "", -1)
+		t = strings.Replace(t, string(u-diff), "", -1)
+		r := react(t)
 		if minLen < 0 || len(r) < minLen {
 			minLen = len(r)
 		}
 	}
 
 	fmt.Println(minLen)
-
-}
-
-func trim(s string, b byte) string {
-	const diff = 'a' - 'A'
-	var r []byte
-	for i := 0; i < len(s); i++ {
-		if s[i] == b || s[i]+diff == b {
-			continue
-		}
-		r = append(r, s[i])
-	}
-
-	return string(r)
 
 }
 
@@ -68,6 +58,5 @@ func step(s string) (string, bool) {
 }
 
 func opposite(a, b byte) bool {
-	const diff = 'a' - 'A'
 	return a+diff == b || b+diff == a
 }
