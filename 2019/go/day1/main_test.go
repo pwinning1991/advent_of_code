@@ -52,3 +52,27 @@ func TestSum(t *testing.T) {
 	}
 
 }
+
+func TestCalculateTotalFuel(t *testing.T) {
+
+	tc := []struct {
+		mass  int
+		total int
+	}{
+		{mass: 14, total: 2},
+		{mass: 1969, total: 966},
+		{mass: 100756, total: 50346},
+	}
+
+	for _, tt := range tc {
+		t.Run(fmt.Sprintf("Running test total fuel on %v", tt.mass), func(t *testing.T) {
+			got := calculateTotalFuel(tt.mass)
+			want := tt.total
+			if got != want {
+				t.Errorf("got %v, wanted %v", got, want)
+			}
+
+		})
+	}
+
+}
