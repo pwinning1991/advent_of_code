@@ -21,9 +21,7 @@ func TestCalculateFuel(t *testing.T) {
 		t.Run(fmt.Sprintf("testing with the mass of %d", v.mass), func(t *testing.T) {
 			got := calculateFuel(v.mass)
 			want := v.answer
-			if got != want {
-				t.Errorf("got %d,want %d", got, want)
-			}
+			assertEqual(t, got, want)
 
 		})
 	}
@@ -44,9 +42,7 @@ func TestSum(t *testing.T) {
 		t.Run(fmt.Sprintf("Testing sum function on %v", tc.nums), func(t *testing.T) {
 			got := sum(tc.nums)
 			want := tc.sum
-			if got != want {
-				t.Errorf("got %d want %d", got, want)
-			}
+			assertEqual(t, got, want)
 
 		})
 	}
@@ -68,11 +64,16 @@ func TestCalculateTotalFuel(t *testing.T) {
 		t.Run(fmt.Sprintf("Running test total fuel on %v", tt.mass), func(t *testing.T) {
 			got := calculateTotalFuel(tt.mass)
 			want := tt.total
-			if got != want {
-				t.Errorf("got %v, wanted %v", got, want)
-			}
+			assertEqual(t, got, want)
 
 		})
 	}
 
+}
+
+func assertEqual(t *testing.T, got, want int) {
+	t.Helper()
+	if got != want {
+		t.Errorf("got %v, want %v", got, want)
+	}
 }
