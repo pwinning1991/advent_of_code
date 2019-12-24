@@ -39,6 +39,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("could not read %d, because of %v", n, err)
 		}
+		n = calculateFuel(n)
 		nums = append(nums, n)
 	}
 
